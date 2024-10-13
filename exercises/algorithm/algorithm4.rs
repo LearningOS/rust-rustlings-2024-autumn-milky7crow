@@ -2,11 +2,8 @@
 	binary_search tree
 	This problem requires you to implement a basic interface for a binary tree
 */
-
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
-
 
 #[derive(Debug)]
 struct TreeNode<T>
@@ -50,13 +47,37 @@ where
 
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        //TODO
+        if self.root.is_none() {
+            self.root = Some(Box::new(TreeNode{
+                value,
+                left: None,
+                right: None
+            }));
+        } else {
+            self.root.as_mut().unwrap().insert(value);
+        }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
-        //TODO
-        true
+        let mut ptr = &self.root;
+        while ptr.is_some() {
+            let curr = ptr.as_ref().unwrap().as_ref();
+            if value < curr.value {
+                if curr.left.is_none() {
+                    return false;
+                }
+                ptr = &curr.left;
+            } else if value > curr.value {
+                if curr.right.is_none() {
+                    return false;
+                }
+                ptr = &curr.right;
+            } else {
+                return true;
+            }
+        }
+        false
     }
 }
 
@@ -66,7 +87,29 @@ where
 {
     // Insert a node into the tree
     fn insert(&mut self, value: T) {
-        //TODO
+        if value < self.value {
+            // goes to the left branch
+            if self.left.is_none() {
+                self.left = Some(Box::new(TreeNode {
+                    value,
+                    left: None,
+                    right: None
+                }));
+            } else {
+                self.left.as_mut().unwrap().insert(value);
+            }
+        } else if value > self.value {
+            // goes to the right branch
+            if self.right.is_none() {
+                self.right = Some(Box::new(TreeNode {
+                    value,
+                    left: None,
+                    right: None
+                }));
+            } else {
+                self.right.as_mut().unwrap().insert(value);
+            }
+        }
     }
 }
 

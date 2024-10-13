@@ -2,11 +2,10 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
-
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
+use std::cmp;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -69,14 +68,52 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+	pub fn merge(list_a: LinkedList<T>, list_b: LinkedList<T>) -> Self
+    where T: Ord
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut res = LinkedList::<T>::new();
+
+        let mut ref_a = &list_a.start;
+        let mut ref_b = &list_b.start;
+
+        loop {
+            let val_a: Option<T> = match ref_a {
+                Some(nn) => Some(unsafe { nn.read().val}),
+                None => None
+            };
+            let val_b: Option<T> = match ref_b {
+                Some(nn) => Some(unsafe { nn.read().val}),
+                None => None
+            };
+
+            if val_a.is_some() && val_b.is_some() {
+                let val_a = val_a.unwrap();
+                let val_b = val_b.unwrap();
+
+                if val_a < val_b {
+                    res.add(val_a);
+                    ref_a = unsafe { &(*ref_a.unwrap().as_ptr()).next};
+                } else {
+                    res.add(val_b);
+                    ref_b = unsafe { &(*ref_b.unwrap().as_ptr()).next};
+                }
+            }
+            else if val_a.is_some() && val_b.is_none() {
+                let val_a = val_a.unwrap();
+                res.add(val_a);
+                ref_a = unsafe { &(*ref_a.unwrap().as_ptr()).next};
+            }
+            else if val_a.is_none() && val_b.is_some() {
+                let val_b = val_b.unwrap();
+                res.add(val_b);
+                ref_b = unsafe { &(*ref_b.unwrap().as_ptr()).next};
+            }
+            else {
+                break;
+            }
         }
+
+        res
 	}
 }
 

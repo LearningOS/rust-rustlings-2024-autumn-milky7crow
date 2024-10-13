@@ -2,8 +2,6 @@
 	stack
 	This question requires you to use a stack to achieve a bracket match
 */
-
-// I AM NOT DONE
 #[derive(Debug)]
 struct Stack<T> {
 	size: usize,
@@ -31,7 +29,11 @@ impl<T> Stack<T> {
 		self.size += 1;
 	}
 	fn pop(&mut self) -> Option<T> {
-		// TODO
+		if self.size != 0 {
+			self.size -= 1;
+			return Some(self.data.pop().unwrap());
+		}
+
 		None
 	}
 	fn peek(&self) -> Option<&T> {
@@ -99,10 +101,41 @@ impl<'a, T> Iterator for IterMut<'a, T> {
 	}
 }
 
+fn is_left(ch: &char) -> bool {
+	*ch == '(' || *ch == '[' || *ch == '{'
+}
+
+fn is_right(ch: &char) -> bool {
+	*ch == ')' || *ch == ']' || *ch == '}'
+}
+
+fn is_match(l: &char, r: &char) -> bool {
+	(*l == '(' && *r == ')') ||
+	(*l == '[' && *r == ']') ||
+	(*l == '{' && *r == '}')
+}
+
 fn bracket_match(bracket: &str) -> bool
 {
-	//TODO
-	true
+	let mut st = Stack::<char>::new();
+	let mut it = bracket.chars();
+
+	while let Some(curr) = it.next() {
+		if is_left(&curr) {
+			st.push(curr);
+		} else if is_right(&curr) {
+			if let Some(left) = st.peek() {
+				if !is_match(left, &curr) {
+					return false;
+				}
+				st.pop();
+			} else {
+				return false;
+			}
+		}
+	}
+
+	st.is_empty()
 }
 
 #[cfg(test)]

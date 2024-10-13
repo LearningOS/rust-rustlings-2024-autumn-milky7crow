@@ -2,8 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
-
 use std::cmp::Ord;
 use std::default::Default;
 
@@ -12,8 +10,9 @@ where
     T: Default,
 {
     count: usize,
-    items: Vec<T>,
+    pub items: Vec<T>,
     comparator: fn(&T, &T) -> bool,
+    iter_pos: usize,
 }
 
 impl<T> Heap<T>
@@ -25,6 +24,7 @@ where
             count: 0,
             items: vec![T::default()],
             comparator,
+            iter_pos: 0,
         }
     }
 
@@ -37,7 +37,9 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count += 1;
+        self.buoy(self.count);
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -60,6 +62,71 @@ where
         //TODO
 		0
     }
+
+    fn buoy(&mut self, idx: usize) {
+        if idx == 1 {
+            return;
+        }
+
+        let p_idx = self.parent_idx(idx);
+        // satisfies the rule
+        if (self.comparator)(&self.items[p_idx], &self.items[idx]) {
+            return;
+        }
+
+        if self.right_child_idx(p_idx) >= self.count {
+            self.items.swap(idx, p_idx);
+        } else {
+            let l_idx = self.left_child_idx(p_idx);
+            let r_idx = self.right_child_idx(p_idx);
+            if (self.comparator)(&self.items[l_idx], &self.items[r_idx]) {
+                self.items.swap(l_idx, p_idx);
+            } else {
+                self.items.swap(r_idx, p_idx);
+            }
+        }
+
+        self.buoy(p_idx);
+    }
+
+    fn sink(&mut self, idx: usize) {
+        println!("operate {} on {}", &idx, &self.count);
+        if !self.children_present(idx) {
+            return;
+        }
+
+        let l_idx = self.left_child_idx(idx);
+        let r_idx = self.right_child_idx(idx);
+        if r_idx >= self.count {
+            // right child not present
+            if (self.comparator)(&self.items[idx], &self.items[l_idx]) {
+                return;
+            }
+            self.items.swap(idx, l_idx);
+            self.sink(l_idx);
+        } else {
+            let l_format = (self.comparator)(&self.items[idx], &self.items[l_idx]);
+            let r_format = (self.comparator)(&self.items[idx], &self.items[r_idx]);
+            if l_format && r_format {
+                return;
+            } else if l_format && !r_format {
+                self.items.swap(idx, l_idx);
+                self.sink(l_idx);
+            } else if !l_format && r_format {
+                self.items.swap(idx, r_idx);
+                self.sink(r_idx);
+            } else {
+                // both false
+                if (self.comparator)(&self.items[l_idx], &self.items[r_idx]) {
+                    self.items.swap(idx, l_idx);
+                    self.sink(l_idx);
+                } else {
+                    self.items.swap(idx, r_idx);
+                    self.sink(r_idx);
+                }
+            }
+        }
+    }
 }
 
 impl<T> Heap<T>
@@ -79,13 +146,20 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count == 0 {
+            return None;
+        }
+
+        self.items.swap(1, self.count);
+        let res = Some(self.items.pop().unwrap());
+        self.count -= 1;
+        self.sink(1);
+        res
     }
 }
 
@@ -131,6 +205,9 @@ mod tests {
         heap.add(11);
         assert_eq!(heap.len(), 4);
         assert_eq!(heap.next(), Some(2));
+        for v in &heap.items {
+            println!("{}", *v);
+        }
         assert_eq!(heap.next(), Some(4));
         assert_eq!(heap.next(), Some(9));
         heap.add(1);

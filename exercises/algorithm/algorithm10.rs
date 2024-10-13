@@ -2,8 +2,6 @@
 	graph
 	This problem requires you to implement a basic graph functio
 */
-// I AM NOT DONE
-
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 #[derive(Debug, Clone)]
@@ -29,7 +27,16 @@ impl Graph for UndirectedGraph {
         &self.adjacency_table
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
+        if !self.contains(edge.0) {
+            self.add_node(edge.0);
+        }
+        if !self.contains(edge.1) {
+            self.add_node(edge.1);
+        }
+
+        let table = self.adjacency_table_mutable();
+        table.get_mut(edge.0).unwrap().push((String::from(edge.1), edge.2));
+        table.get_mut(edge.1).unwrap().push((String::from(edge.0), edge.2));
     }
 }
 pub trait Graph {
@@ -37,11 +44,19 @@ pub trait Graph {
     fn adjacency_table_mutable(&mut self) -> &mut HashMap<String, Vec<(String, i32)>>;
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
-        //TODO
+        self.adjacency_table_mutable().insert(String::from(node), vec![]);
 		true
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
+        if !self.contains(edge.0) {
+            self.add_node(edge.0);
+        }
+        if !self.contains(edge.1) {
+            self.add_node(edge.1);
+        }
+
+        let table = self.adjacency_table_mutable();
+        table.get_mut(edge.0).unwrap().push((String::from(edge.1), edge.2));
     }
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
@@ -53,6 +68,7 @@ pub trait Graph {
         let mut edges = Vec::new();
         for (from_node, from_node_neighbours) in self.adjacency_table() {
             for (to_node, weight) in from_node_neighbours {
+                // TODO: why weight alone needs deref
                 edges.push((from_node, to_node, *weight));
             }
         }
@@ -78,6 +94,7 @@ mod test_undirected_graph {
             (&String::from("c"), &String::from("b"), 10),
         ];
         for edge in expected_edges.iter() {
+            println!("done");
             assert_eq!(graph.edges().contains(edge), true);
         }
     }
